@@ -1,4 +1,5 @@
 from pathlib import Path
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from sqlalchemy.orm import Session
@@ -29,7 +30,7 @@ async def upload_pdf(file: UploadFile = File(...), db: Session = Depends(get_db)
     file_bytes = await file.read()
     file_path.write_bytes(file_bytes)
 
-    document = Document(filename=file.filename, file_path=str(file_path), status="uploaded")
+    document = Document(file_name=file.filename, file_path_url=str(file_path), status="Pending")
     db.add(document)
     db.commit()
     db.refresh(document)
@@ -37,14 +38,14 @@ async def upload_pdf(file: UploadFile = File(...), db: Session = Depends(get_db)
 
 
 @router.post("/process/{document_id}")
-def process_document(document_id: int, db: Session = Depends(get_db)):
+def process_document(document_id: UUID, db: Session = Depends(get_db)):
     document = db.query(Document).filter(Document.id == document_id).first()
     if document is None:
         raise HTTPException(status_code=404, detail="Document not found.")
 
     output_dir = Path(settings.upload_dir) / f"document_{document_id}"
-    latex_outputs = parser.parse_pdf(document.file_path, str(output_dir))
-    document.status = "processed"
+    latex_outputs = parser.parse_pdf(document.file_path_url, str(output_dir))
+    document.status = "Processed"
     document.latex_content = "\n".join(filter(None, latex_outputs))
     db.commit()
     db.refresh(document)

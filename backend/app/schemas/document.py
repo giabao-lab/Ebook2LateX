@@ -1,17 +1,20 @@
 from datetime import datetime
+from uuid import UUID
 
 from pydantic import BaseModel
 
 
 class DocumentCreate(BaseModel):
-    filename: str
-    file_path: str
+    user_id: UUID | None = None
+    file_name: str
+    file_path_url: str
+    latex_content: str | None = None
 
 
 class DocumentRead(DocumentCreate):
-    id: int
+    id: UUID
+    upload_date: datetime
     status: str
-    latex_content: str | None = None
     created_at: datetime
 
     class Config:

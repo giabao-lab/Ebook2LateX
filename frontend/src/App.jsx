@@ -11,6 +11,8 @@ export default function App() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [statusMessage, setStatusMessage] = useState("Sẵn sàng.");
   const [documentId, setDocumentId] = useState(null);
+  const [healthStatus, setHealthStatus] = useState("Chưa kiểm tra.");
+  const [isCheckingHealth, setIsCheckingHealth] = useState(false);
 
   const handleUpload = async () => {
     if (!selectedFile) {
@@ -47,6 +49,20 @@ export default function App() {
     }
   };
 
+  const handleHealthCheck = async () => {
+    setIsCheckingHealth(true);
+    setHealthStatus("Đang gọi /api/health...");
+
+    try {
+      const response = await api.get("/api/health");
+      setHealthStatus(`FastAPI phản hồi: ${JSON.stringify(response.data)}`);
+    } catch (error) {
+      setHealthStatus(error?.response?.data?.detail || error.message || "Không gọi được /api/health");
+    } finally {
+      setIsCheckingHealth(false);
+    }
+  };
+
   return (
     <main className="min-h-screen bg-slate-50 px-4 py-8">
       <div className="mx-auto grid max-w-7xl gap-6 lg:grid-cols-[1fr_1.1fr]">
@@ -58,6 +74,24 @@ export default function App() {
               Khung giao diện này chuẩn bị cho luồng tải PDF, xử lý công thức và đồng bộ 2 chiều giữa
               ô văn bản LaTeX và MathLive.
             </p>
+          </div>
+
+          <div className="mb-6 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <h2 className="text-sm font-semibold text-slate-900">Web service demo</h2>
+            <p className="mt-2 text-sm text-slate-600">
+              Nút này gọi thử endpoint FastAPI <code>/api/health</code> để kiểm tra kết nối frontend → backend.
+            </p>
+            <div className="mt-3 flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                onClick={handleHealthCheck}
+                disabled={isCheckingHealth}
+                className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {isCheckingHealth ? "Đang kiểm tra..." : "Kiểm tra FastAPI"}
+              </button>
+              <span className="text-sm text-slate-700">{healthStatus}</span>
+            </div>
           </div>
 
           <div className="space-y-4">

@@ -2,7 +2,9 @@ fastapi
 uvicorn[standard]
 python-dotenv
 sqlalchemy
+alembic
 pydantic
 pymupdf
 psycopg2-binary
 python-multipart
+requests

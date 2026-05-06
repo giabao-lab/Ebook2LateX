@@ -5,9 +5,9 @@ services:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ebook2latex
+      POSTGRES_DB: ebook2latex_db
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_PASSWORD: 123asd
     ports:
       - "5432:5432"
     volumes:
@@ -23,7 +23,7 @@ services:
     env_file:
       - ./backend/.env
     environment:
-      DB_URL: postgresql+psycopg2://postgres:postgres@db:5432/ebook2latex
+      DATABASE_URL: postgresql+psycopg2://postgres:123asd@db:5432/ebook2latex_db
       UPLOAD_DIR: uploads
 
   frontend:

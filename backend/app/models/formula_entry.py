@@ -1,4 +1,7 @@
-from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String, Text, func
+import uuid
+
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, Text, func
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
 from app.core.database import Base
@@ -7,13 +10,18 @@ from app.core.database import Base
 class FormulaEntry(Base):
     __tablename__ = "formula_entries"
 
-    id = Column(Integer, primary_key=True, index=True)
-    document_id = Column(Integer, ForeignKey("documents.id"), nullable=False)
-    page_number = Column(Integer, nullable=False, default=1)
-    formula_index = Column(Integer, nullable=False, default=0)
-    latex = Column(Text, nullable=False)
-    image_path = Column(String(500), nullable=True)
-    confidence = Column(Float, nullable=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    document_id = Column(UUID(as_uuid=True), ForeignKey("documents.id", ondelete="CASCADE"), nullable=False)
+    raw_image_path = Column(Text, nullable=True)
+    latex_content = Column(Text, nullable=False)
+    order_index = Column(Integer, nullable=False, default=0)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
 
-    document = relationship("Document", backref="formula_entries")
+    document = relationship("Document", back_populates="formula_entries")
+    logs = relationship("Log", back_populates="formula_entry", cascade="all, delete-orphan")
